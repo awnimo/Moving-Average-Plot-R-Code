@@ -1,4 +1,4 @@
-# Moving-Average-Plot-R-Code
+
 <html>
 
 <head>
