@@ -1,0 +1,106 @@
+<html>
+
+<head>
+<title>Moving Average Plot</title>
+<h1>Moving Average Plot R Code</h2>
+<p>Created by: <b>Awni Mousa</b><p>
+<p><i>July 29th, 2015</i></p>
+</head>
+
+<body>
+
+<p>The following R function will apply a sliding window of moving average method given a window size and steps.</p>
+<p>As input, a two column <b>data frame</b>, <i>df</i>, of a response and terms, is used, where response is the (numeric) response vector and terms is a series of terms which specifies a linear predictor for response. Example, response = log2FC, predictor = geneLength. Optional arguments can be changed to control the window size and the step value.
+<p>The <i>winSize</i>, an integer > 1, controls the desired window size; default 200.</p>
+<p>The <i>step</i> controls the distance between windows and is an integer <= <i>winSize</i>; default 40.</p>
+<p>The output is a <i>LIST</i> of 2 elements:
+<ul>
+<li>a 4 column data frame:
+<ul style="list-style-type:circle">
+<li>predMean - the mean of the predictor terms within a window</li>
+<li>respAvg - the mean of the response within a window (the moving average)</li>
+<li>ucl, lcl - the 95% CI upper and lower levels</li></ul>
+<li>a plotting object</li></ul>
+<p>These values can be assigned to a variable to be used in the environment by calling the first element in the <i>list[[1]]</i> to get the data frame with the values, and by calling the second element in the <i>list[[2]]</i> to initiate the plot (<i>see example below</i>).</p>
+
+<h2>R code</h2>
+
+<!--begin.rcode
+movingAverage.AM <- function( df, winSize=200, step=40){
+  colnames(df) <- c("response","predictor")
+  meanValue <- NULL
+  l <- seq(1,length(df$response),step)
+  for(i in l){
+    if(i+winSize-1 > length(df$response)){
+      i1 = length(df$response) }
+    else i1 = i+winSize-1
+    # mean
+    respAvg <- mean(df$response[i:i1])
+    # 95% CI
+    ucl <- respAvg + 1.96 * sd(df$response[i:i1]/sqrt(length(df$response[i:i1])))
+    lcl <- respAvg - 1.96 * sd(df$response[i:i1]/sqrt(length(df$response[i:i1])))
+    # average gene length in bin
+    predMean <- mean(df$predictor[i:i1])
+    meanValue.i <- cbind(predMean,respAvg,ucl,lcl)
+    meanValue <- rbind(meanValue, meanValue.i)
+  }
+  meanValue <- as.data.frame(meanValue)
+  # make plot
+  library(ggplot2)
+  p = ggplot(df, aes(y=response, x=predictor))
+  P <- p + scale_x_log10(breaks=10^(seq(-1,10)),labels=10^(seq(-1,10))) +
+    geom_point(color="grey64", alpha=1/2) +
+    geom_abline(intercept = 0, slope = 0, lwd = 1, col = "#009E73", alpha=1/2) +
+    annotation_logticks(sides="b") +
+    geom_smooth(aes(x=predMean, y=respAvg, ymin=lcl, ymax=ucl), data=meanValue,
+                stat="identity", color="red", fill="red") +
+    geom_rug(position="jitter", size=0.05, color="magenta", alpha=1/8,
+             sides="tr") +
+    xlab("predictor") + ylab("response") +
+    ggtitle(bquote( atop("Moving Average", paste("Window Size ",.(winSize),
+                                                 " Step ", .(step) ))))
+  return(list(MovingAverage=meanValue, plot=P))
+}
+
+end.rcode-->
+
+<h3>Usage and example plot</h3>
+
+<!--begin.rcode
+df <- read.table("df.txt",header = T, sep = "\t", quote = "")
+end.rcode-->
+
+<p><i>df</i> is a data frame with two columns:</p>
+
+<!--begin.rcode
+head(df)
+end.rcode-->
+
+<p>it has 21334 rows:</p>
+
+<!--begin.rcode
+dim(df)
+end.rcode-->
+
+<p>To run the function and assign the results to a variable:</p>
+
+<!--begin.rcode
+result <- movingAverage.AM(df = df , winSize = 200 , step = 40)
+end.rcode-->
+
+<p>To extract the output table:</p>
+
+<!--begin.rcode fig.width=7, fig.height=6
+# result$MovingAverage
+head(result$MovingAverage)
+end.rcode-->
+
+<p>To plot the output type in:</p>
+
+<!--begin.rcode fig.width=9, fig.height=8
+result$plot
+end.rcode-->
+<p></p>
+<p>Comments are welcome: <a href="mailto:amousa@rockefeller.edu">amousa@rockefeller.edu</a></p>
+</body>
+</html>
