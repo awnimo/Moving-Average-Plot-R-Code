@@ -1,8 +1,5 @@
 
 <html>
-
-<head>
-<title>Moving Average Plot</title>
 <h1>Moving Average Plot R Code</h2>
 <p>Created by: <b>Awni Mousa</b><p>
 <p><i>July 29th, 2015</i></p>
